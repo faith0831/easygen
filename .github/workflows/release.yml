@@ -1,5 +1,7 @@
 name: Release
-on: [release]
+on:
+  release:
+    types: [published]
 jobs:
   release-windows-386:
     name: release windows/386
