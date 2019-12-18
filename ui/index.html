@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>easygen - 简单易用的代码生成器 http://dev9.cn</title>
+    <link href="css/style.css" rel="stylesheet" />
+    <link
+      href="https://cdn.bootcss.com/element-ui/2.12.0/theme-chalk/index.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.bootcss.com/highlight.js/9.15.10/styles/vs.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdn.bootcss.com/element-ui/2.12.0/index.js"></script>
+    <script src="https://cdn.bootcss.com/axios/0.19.0/axios.min.js"></script>
+    <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+    <script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/go.min.js"></script>
+    <script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/cs.min.js"></script>
+    <script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/javascript.min.js"></script>
+    <script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+    <style></style>
+  </head>
+  <body>
+    <div id="app" class="app-wrapper" v-cloak>
+      <el-container :style="{height:clientHeight + 'px'}">
+        <el-aside class="sidebar">
+          <el-tree
+            :data="tables"
+            node-key="id"
+            @node-click="selectTable"
+            highlight-current
+            default-expand-all
+          >
+          </el-tree>
+        </el-aside>
+        <el-container>
+          <el-header class="app-header">
+            <div style="height: 65px;line-height: 65px;">
+              <div class="logo">easygen</div>
+              <div style="float: left; margin-left: 150px;">
+                <el-button
+                  v-show="code"
+                  icon="el-icon-copy-document"
+                  class="copy_code"
+                  title="复制代码"
+                  circle
+                  :data-clipboard-text="code | decode"
+                ></el-button>
+              </div>
+              <div style="float: right;">
+                <el-cascader
+                  :options="templates"
+                  @change="selectTemplate"
+                  placeholder="请选择代码模板"
+                ></el-cascader>
+                <el-button type="primary" @click="generate">生成代码</el-button>
+                <el-popover
+                  placement="bottom"
+                  title="自定义变量"
+                  width="200"
+                  trigger="click"
+                >
+                  <el-form>
+                    <el-form-item :key="i" v-for="(item,i) in form.env">
+                      <el-col :span="11">
+                        <el-input
+                          v-model="item.key"
+                          placeholder="名称"
+                        ></el-input>
+                      </el-col>
+                      <el-col class="line" :span="2">&nbsp;</el-col>
+                      <el-col :span="11">
+                        <el-input
+                          v-model="item.value"
+                          placeholder="值"
+                        ></el-input>
+                      </el-col>
+                    </el-form-item>
+                  </el-form>
+                  <el-button
+                    slot="reference"
+                    icon="el-icon-setting"
+                    title="自定义变量"
+                  ><span style="color: red;" v-if="this.form.env && this.form.env.length >0">{{this.form.env.length}}</span></el-button>
+                </el-popover>
+              </div>
+            </div>
+          </el-header>
+          <el-main class="app-main">
+            <pre
+              v-highlight
+              v-show="code"
+            ><code :class="form.lang" v-html="code"></code></pre>
+          </el-main>
+        </el-container>
+      </el-container>
+    </div>
+    <script>
+      const def_env = {
+        csharp: [
+          { key: "Alias", value: "" },
+          { key: "Module", value: "" }
+        ],
+        golang: []
+      };
+
+      Vue.directive("highlight", {
+        deep: true,
+        componentUpdated: function componentUpdated(el, binding) {
+          let blocks = el.querySelectorAll("code");
+          blocks.forEach(b => {
+            hljs.highlightBlock(b);
+          });
+        }
+      });
+
+      Vue.prototype.getViewportSize = function() {
+        return {
+          width:
+            window.innerWidth ||
+            document.documentElement.clientWidth ||
+            document.body.clientWidth,
+          height:
+            window.innerHeight ||
+            document.documentElement.clientHeight ||
+            document.body.clientHeight
+        };
+      };
+
+      new Vue({
+        el: "#app",
+        filters: {
+          decode: function(value) {
+            let temp = document.createElement("div");
+            temp.innerHTML = value;
+            let output = temp.innerText || temp.textContent;
+            temp = null;
+            return output;
+          }
+        },
+        data: function() {
+          return {
+            clientHeight: this.getViewportSize().height,
+            visible: false,
+            form: {
+              table: null,
+              lang: null,
+              template: null,
+              env: {}
+            },
+            tables: [],
+            templates: [],
+            code: ""
+          };
+        },
+        created() {
+          this.getTables();
+          this.getTemplates();
+          this.initCopy();
+        },
+        methods: {
+          initCopy() {
+            let c = new ClipboardJS(".copy_code");
+            c.on("success", () => {
+              this.$message.success("复制成功");
+            });
+            c.on("error", () => {
+              this.$message.error("复制失败");
+            });
+          },
+          getTemplates() {
+            axios.get("/api/templates").then(res => {
+              if (res.data.code === 1) {
+                this.templates = res.data.result;
+              }
+            });
+          },
+          getTables() {
+            axios.get("/api/tables").then(res => {
+              if (res.data.code === 1) {
+                this.tables = [];
+                res.data.result.forEach((item, index) => {
+                  this.tables.push({ id: index, label: item });
+                });
+              }
+            });
+          },
+          selectTemplate(data) {
+            if (data.length >= 2) {
+              this.form.lang = data[0];
+              this.form.template = data[1];
+              this.form.env = def_env[this.form.lang];
+            } else {
+              this.form.lang = "";
+              this.form.template = data[0];
+            }
+          },
+          selectTable(data) {
+            this.form.table = data.label;
+          },
+          generate() {
+            if (this.form.table === null)
+              return this.$message.warning("请选择要生成代码的表");
+
+            if (this.form.template === null)
+              return this.$message.warning("请选择代码的模板");
+
+            let data = JSON.parse(JSON.stringify(this.form))
+            let env = {};
+
+            data.env.forEach(item => {
+              env[item.key] = item.value;
+            });
+
+            data.env = env;
+
+            axios.post("/api/generate", data).then(res => {
+              if (res.data.code === 0) {
+                return this.$message.error(res.data.msg);
+              }
+
+              this.code = res.data.result;
+            });
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
