@@ -13,10 +13,10 @@ go run main.go
 2. 访问http://localhost:1234，打开ui界面
 
 ## TODO
-- [ ] 支持mysql
-- [ ] 支持mssql
-- [ ] 支持csharp
-- [ ] 初步支持golang
-- [ ] 简易的ui
-- [x] 优化ui
-- [x] 支持更多语言
+- [x] 支持mysql
+- [x] 支持mssql
+- [x] 支持csharp
+- [x] 初步支持golang
+- [x] 简易的ui
+- [ ] 优化ui
+- [ ] 支持更多语言
