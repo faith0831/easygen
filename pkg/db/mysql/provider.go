@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"easygen/pkg/db"
+	"github.com/faith0831/easygen/pkg/db"
 
 	"github.com/jmoiron/sqlx"
 

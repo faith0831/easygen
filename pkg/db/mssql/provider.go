@@ -1,9 +1,10 @@
 package mssql
 
 import (
-	"easygen/pkg/db"
 	"fmt"
 	"sort"
+
+	"github.com/faith0831/easygen/pkg/db"
 
 	"github.com/jmoiron/sqlx"
 

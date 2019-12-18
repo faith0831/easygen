@@ -10,10 +10,10 @@ import (
 	"strings"
 	"text/template"
 
-	"easygen/pkg/config"
-	"easygen/pkg/db"
-	"easygen/pkg/db/mssql"
-	"easygen/pkg/db/mysql"
+	"github.com/faith0831/easygen/pkg/config"
+	"github.com/faith0831/easygen/pkg/db"
+	"github.com/faith0831/easygen/pkg/db/mssql"
+	"github.com/faith0831/easygen/pkg/db/mysql"
 )
 
 // GenerateRequest 生成接收实体

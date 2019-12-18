@@ -1,4 +1,4 @@
-module easygen
+module github.com/faith0831/easygen
 
 go 1.13
 

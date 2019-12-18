@@ -1,7 +1,7 @@
 package mssql
 
 import (
-	"easygen/pkg/db"
+	"github.com/faith0831/easygen/pkg/db"
 )
 
 var csharpMapping = map[string]string{

@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"easygen/pkg/app"
-	"easygen/pkg/builder"
-	"easygen/pkg/config"
+	"github.com/faith0831/easygen/pkg/app"
+	"github.com/faith0831/easygen/pkg/builder"
+	"github.com/faith0831/easygen/pkg/config"
 )
 
 func main() {

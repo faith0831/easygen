@@ -1,7 +1,7 @@
 package app
 
 import (
-	"easygen/pkg/builder"
+	"github.com/faith0831/easygen/pkg/builder"
 
 	"github.com/gin-gonic/gin"
 )
