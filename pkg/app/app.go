@@ -15,7 +15,10 @@ import (
 
 // Run Run
 func Run() {
-	a := Application{}
+	a := Application{
+		b: &builder.Builder{},
+	}
+
 	a.run()
 }
 
@@ -32,7 +35,6 @@ func (app *Application) run() {
 	}
 	defer ui.Close()
 
-	app.b = &builder.Builder{}
 	app.ui = ui
 
 	ln, err := net.Listen("tcp", "127.0.0.1:0")

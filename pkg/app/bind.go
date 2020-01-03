@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/faith0831/easygen/pkg/builder"
-	"github.com/faith0831/easygen/pkg/config"
 )
 
 // HasProvider 是否已创建数据源
@@ -13,8 +12,8 @@ func (app *Application) HasProvider() map[string]interface{} {
 }
 
 // CreateProvider 创建数据源
-func (app *Application) CreateProvider(c *config.Conf) map[string]interface{} {
-	err := app.b.CreateProvider(c)
+func (app *Application) CreateProvider(o *builder.Options) map[string]interface{} {
+	err := app.b.CreateProvider(o)
 	if err != nil {
 		return app.Error(err.Error())
 	}
