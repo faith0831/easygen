@@ -27,69 +27,80 @@
   <body>
     <div id="app" class="app-wrapper" v-cloak>
       <el-container :style="{height:clientHeight + 'px'}">
-        <el-aside class="sidebar">
-          <el-tree
-            :data="tables"
-            node-key="id"
-            @node-click="selectTable"
-            highlight-current
-            default-expand-all
-          >
-          </el-tree>
-        </el-aside>
-        <el-container>
-          <el-header class="app-header">
-            <div style="height: 65px;line-height: 65px;">
-              <div class="logo">easygen</div>
-              <div style="float: left; margin-left: 150px;">
-                <el-button
-                  v-show="code"
-                  icon="el-icon-copy-document"
-                  class="copy_code"
-                  title="复制代码"
-                  circle
-                  :data-clipboard-text="code | decode"
-                ></el-button>
-              </div>
-              <div style="float: right;">
-                <el-cascader
-                  :options="templates"
-                  @change="selectTemplate"
-                  placeholder="请选择代码模板"
-                ></el-cascader>
-                <el-button type="primary" @click="generate">生成代码</el-button>
-                <el-popover
-                  placement="bottom"
-                  title="自定义变量"
-                  width="200"
-                  trigger="click"
-                >
-                  <el-form>
-                    <el-form-item :key="i" v-for="(item,i) in form.env">
-                      <el-col :span="11">
-                        <el-input
-                          v-model="item.key"
-                          placeholder="名称"
-                        ></el-input>
-                      </el-col>
-                      <el-col class="line" :span="2">&nbsp;</el-col>
-                      <el-col :span="11">
-                        <el-input
-                          v-model="item.value"
-                          placeholder="值"
-                        ></el-input>
-                      </el-col>
-                    </el-form-item>
-                  </el-form>
-                  <el-button
-                    slot="reference"
-                    icon="el-icon-setting"
-                    title="自定义变量"
-                  ><span style="color: red;" v-if="this.form.env && this.form.env.length >0">{{this.form.env.length}}</span></el-button>
-                </el-popover>
-              </div>
+        <el-header class="app-header">
+          <div style="height: 65px;line-height: 65px;">
+            <div class="logo">easygen</div>
+            <div style="float: left; margin-left: 150px;">
+              <el-button
+              @click="showProviderDialog"
+              icon="el-icon-s-tools"
+              title="切换数据源"
+              circle
+            ></el-button>
+              <el-button
+                v-show="code"
+                icon="el-icon-copy-document"
+                class="copy_code"
+                title="复制代码"
+                circle
+                :data-clipboard-text="code | decode"
+              ></el-button>
             </div>
-          </el-header>
+            <div style="float: right;">
+              <el-cascader
+                :options="templates"
+                @change="selectTemplate"
+                placeholder="请选择代码模板"
+              ></el-cascader>
+              <el-button type="primary" @click="generate">生成代码</el-button>
+              <el-popover
+                placement="bottom"
+                title="自定义变量"
+                width="200"
+                trigger="click"
+              >
+                <el-form>
+                  <el-form-item :key="i" v-for="(item,i) in form.env">
+                    <el-col :span="11">
+                      <el-input
+                        v-model="item.key"
+                        placeholder="名称"
+                      ></el-input>
+                    </el-col>
+                    <el-col class="line" :span="2">&nbsp;</el-col>
+                    <el-col :span="11">
+                      <el-input
+                        v-model="item.value"
+                        placeholder="值"
+                      ></el-input>
+                    </el-col>
+                  </el-form-item>
+                </el-form>
+                <el-button
+                  slot="reference"
+                  icon="el-icon-setting"
+                  title="自定义变量"
+                  ><span
+                    style="color: red;"
+                    v-if="this.form.env && this.form.env.length >0"
+                    >{{this.form.env.length}}</span
+                  ></el-button
+                >
+              </el-popover>
+            </div>
+          </div>
+        </el-header>
+        <el-container>
+          <el-aside class="sidebar">
+            <el-tree
+              :data="tables"
+              node-key="id"
+              @node-click="selectTable"
+              highlight-current
+              default-expand-all
+            >
+            </el-tree>
+          </el-aside>
           <el-main class="app-main">
             <pre
               v-highlight
@@ -98,6 +109,43 @@
           </el-main>
         </el-container>
       </el-container>
+      <el-dialog
+        title="连接数据库"
+        :visible.sync="providerDialog.show"
+        width="500px"
+      >
+        <el-form ref="form" :model="form" label-width="80px">
+          <el-form-item label="数据源">
+            <el-select
+              v-model="providerDialog.form.driver"
+              placeholder="请选择数据源"
+            >
+              <el-option label="mysql" value="mysql"></el-option>
+              <el-option label="mssql" value="mssql"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="host">
+            <el-input v-model="providerDialog.form.host" clearable></el-input>
+          </el-form-item>
+          <el-form-item label="username">
+            <el-input v-model="providerDialog.form.username" clearable></el-input>
+          </el-form-item>
+          <el-form-item label="password">
+            <el-input
+              type="password"
+              v-model="providerDialog.form.password"
+              clearable
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="database">
+            <el-input v-model="providerDialog.form.database" clearable></el-input>
+          </el-form-item>
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="providerDialog.show = false">取消</el-button>
+          <el-button type="primary" @click="createProvider">确定</el-button>
+        </span>
+      </el-dialog>
     </div>
     <script>
       const def_env = {
@@ -152,13 +200,29 @@
               template: null,
               env: {}
             },
+            providerDialog: {
+              show: false,
+              form: {
+                driver: "mysql",
+                host: "192.168.1.245:3306",
+                username: "root",
+                password: "123456",
+                database: "demo"
+              }
+            },
             tables: [],
             templates: [],
             code: ""
           };
         },
-        created() {
-          this.getTables();
+        async created() {
+          let res = await api_hasProvider();
+          if (res.data === false) {
+            this.showProviderDialog();
+          } else {
+            this.getTables();
+          }
+
           this.getTemplates();
           this.initCopy();
         },
@@ -172,21 +236,38 @@
               this.$message.error("复制失败");
             });
           },
-          getTemplates() {
-            axios.get("/api/templates").then(res => {
-              if (res.data.code === 1) {
-                this.templates = res.data.result;
-              }
-            });
+          showProviderDialog() {
+            this.providerDialog.show = true;
           },
-          getTables() {
-            axios.get("/api/tables").then(res => {
-              if (res.data.code === 1) {
-                this.tables = [];
-                res.data.result.forEach((item, index) => {
-                  this.tables.push({ id: index, label: item });
-                });
-              }
+          async createProvider() {
+            let res = await api_createProvider(this.providerDialog.form);
+            if (res.code === 0) {
+              return this.$message.error(res.msg);
+            }
+
+            this.getTables();
+            this.providerDialog.show = false;
+          },
+          async getTemplates() {
+            let res = await api_getTemplates();
+            if (res.code === 0) {
+              return this.$message.error(res.msg);
+            }
+
+            this.templates = res.data;
+          },
+          async getTables() {
+            let res = await api_getTables();
+            if (res.code === 0) {
+              return this.$message.error(res.msg);
+            }
+            if (res.code === 400) {
+              return this.showProviderDialog();
+            }
+
+            this.tables = [];
+            res.data.forEach((item, index) => {
+              this.tables.push({ id: index, label: item });
             });
           },
           selectTemplate(data) {
@@ -202,14 +283,14 @@
           selectTable(data) {
             this.form.table = data.label;
           },
-          generate() {
+          async generate() {
             if (this.form.table === null)
               return this.$message.warning("请选择要生成代码的表");
 
             if (this.form.template === null)
               return this.$message.warning("请选择代码的模板");
 
-            let data = JSON.parse(JSON.stringify(this.form))
+            let data = JSON.parse(JSON.stringify(this.form));
             let env = {};
 
             data.env.forEach(item => {
@@ -218,13 +299,15 @@
 
             data.env = env;
 
-            axios.post("/api/generate", data).then(res => {
-              if (res.data.code === 0) {
-                return this.$message.error(res.data.msg);
-              }
+            let res = await api_generate(data);
+            if (res.code === 0) {
+              return this.$message.error(res.msg);
+            }
+            if (res.code === 400) {
+              return this.showProviderDialog();
+            }
 
-              this.code = res.data.result;
-            });
+            this.code = res.data;
           }
         }
       });

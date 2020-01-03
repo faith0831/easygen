@@ -12,6 +12,9 @@ import (
 )
 
 const (
+	// ProviderName mysql
+	ProviderName = "mysql"
+
 	// TableNamesScript 取表名列表sql语句
 	TableNamesScript = `
 	SELECT

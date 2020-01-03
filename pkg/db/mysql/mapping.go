@@ -6,6 +6,7 @@ import (
 
 var csharpMapping = map[string]string{
 	"tinyint":    "bool",
+	"bit":        "bool",
 	"smallint":   "short",
 	"mediumint":  "int",
 	"int":        "int",

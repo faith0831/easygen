@@ -2,6 +2,7 @@ package builder
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"html"
 	"io/ioutil"
@@ -14,6 +15,11 @@ import (
 	"github.com/faith0831/easygen/pkg/db"
 	"github.com/faith0831/easygen/pkg/db/mssql"
 	"github.com/faith0831/easygen/pkg/db/mysql"
+)
+
+var (
+	// ErrNotFoundProvider 没有找到数据源异常
+	ErrNotFoundProvider = errors.New("not found provider")
 )
 
 // GenerateRequest 生成接收实体
@@ -33,53 +39,56 @@ type Node struct {
 
 // Builder 生成器
 type Builder struct {
+	driver   string
 	config   *config.Conf
 	provider db.Provider
 	mapping  db.TypeMappingFunc
-}
-
-// Create 创建生成器
-func Create(c *config.Conf) (*Builder, error) {
-	var p db.Provider
-	var m db.TypeMappingFunc
-
-	if c.Driver == "mysql" {
-		conn := fmt.Sprintf("%s:%s@tcp(%s)/%s?parseTime=true&loc=Local", c.Username, c.Password, c.Host, c.Database)
-		p1, err := mysql.New(conn)
-		if err != nil {
-			return nil, fmt.Errorf("连接mysql %w", err)
-		}
-
-		p = p1
-		m = mysql.TypeMapping
-	} else if c.Driver == "mssql" {
-		conn := fmt.Sprintf("user id=%s;password=%s;server=%s;database=%s", c.Username, c.Password, c.Host, c.Database)
-		p1, err := mssql.New(conn)
-		if err != nil {
-			return nil, fmt.Errorf("连接mssql %w", err)
-		}
-
-		p = p1
-		m = mssql.TypeMapping
-	} else {
-		return nil, fmt.Errorf("不支持数据库%s", c.Driver)
-	}
-
-	b := &Builder{
-		config:   c,
-		provider: p,
-		mapping:  m,
-	}
-
-	return b, nil
 }
 
 var funcMap = template.FuncMap{
 	"lower": strings.ToLower,
 }
 
+// HasProvider HasProvider
+func (b *Builder) HasProvider() bool {
+	return b.provider != nil
+}
+
+// CreateProvider CreateProvider
+func (b *Builder) CreateProvider(c *config.Conf) error {
+	if c.Driver == mysql.ProviderName {
+		conn := fmt.Sprintf("%s:%s@tcp(%s)/%s?parseTime=true&loc=Local", c.Username, c.Password, c.Host, c.Database)
+		p1, err := mysql.New(conn)
+		if err != nil {
+			return fmt.Errorf("连接mysql %w", err)
+		}
+
+		b.driver = c.Driver
+		b.provider = p1
+		b.mapping = mysql.TypeMapping
+	} else if c.Driver == mssql.ProviderName {
+		conn := fmt.Sprintf("user id=%s;password=%s;server=%s;database=%s", c.Username, c.Password, c.Host, c.Database)
+		p1, err := mssql.New(conn)
+		if err != nil {
+			return fmt.Errorf("连接mssql %w", err)
+		}
+
+		b.driver = c.Driver
+		b.provider = p1
+		b.mapping = mssql.TypeMapping
+	} else {
+		return fmt.Errorf("不支持数据库%s", c.Driver)
+	}
+
+	return nil
+}
+
 // Generate 生成代码
 func (b *Builder) Generate(r *GenerateRequest) (string, error) {
+	if b.provider == nil {
+		return "", ErrNotFoundProvider
+	}
+
 	s, err := ioutil.ReadFile(fmt.Sprintf("./tpl/%s/%s.tpl", r.Lang, r.Template))
 	if err != nil {
 		return "", err
@@ -159,5 +168,9 @@ func (b *Builder) GetTemplates() ([]*Node, error) {
 
 // GetTables 取数据表列表
 func (b *Builder) GetTables() ([]string, error) {
+	if b.provider == nil {
+		return nil, ErrNotFoundProvider
+	}
+
 	return b.provider.GetTableNames()
 }

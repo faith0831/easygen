@@ -1,31 +1,85 @@
 package app
 
 import (
+	"fmt"
+	"log"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+
 	"github.com/faith0831/easygen/pkg/builder"
 
-	"github.com/gin-contrib/static"
-	"github.com/gin-gonic/gin"
+	"github.com/zserge/lorca"
 )
+
+// Run Run
+func Run() {
+	a := Application{}
+	a.run()
+}
 
 // Application 应用结构体
 type Application struct {
-	b *builder.Builder
+	b  *builder.Builder
+	ui lorca.UI
 }
 
-// Create 创建应用实例
-func Create(b *builder.Builder) *Application {
-	return &Application{
-		b: b,
+func (app *Application) run() {
+	ui, err := lorca.New("", "", 900, 700)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer ui.Close()
+
+	app.b = &builder.Builder{}
+	app.ui = ui
+
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer ln.Close()
+
+	ui.Bind("api_hasProvider", app.HasProvider)
+	ui.Bind("api_createProvider", app.CreateProvider)
+	ui.Bind("api_generate", app.Generate)
+	ui.Bind("api_getTables", app.GetTables)
+	ui.Bind("api_getTemplates", app.GetTemplates)
+
+	go http.Serve(ln, http.FileServer(http.Dir("./ui")))
+	ui.Load(fmt.Sprintf("http://%s", ln.Addr()))
+
+	sigc := make(chan os.Signal)
+	signal.Notify(sigc, os.Interrupt)
+	select {
+	case <-sigc:
+	case <-ui.Done():
 	}
 }
 
-// Run Run
-func (app *Application) Run() error {
-	r := gin.Default()
-	r.Use(static.Serve("/", static.LocalFile("./ui", false)))
-	r.GET("api/tables", app.GetTables)
-	r.GET("api/templates", app.GetTemplates)
-	r.POST("api/generate", app.Generate)
+// Ok Ok
+func (app *Application) Ok(data interface{}) map[string]interface{} {
+	return map[string]interface{}{
+		"code": 1,
+		"msg":  "ok",
+		"data": data,
+	}
+}
 
-	return r.Run(":1234")
+// Error Error
+func (app *Application) Error(msg string) map[string]interface{} {
+	return map[string]interface{}{
+		"code": 0,
+		"msg":  msg,
+	}
+}
+
+// Custom Custom
+func (app *Application) Custom(code int, msg string, data interface{}) map[string]interface{} {
+	return map[string]interface{}{
+		"code": code,
+		"msg":  msg,
+		"data": data,
+	}
 }
