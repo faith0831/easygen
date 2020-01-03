@@ -10,10 +10,6 @@ cd easygen
 go run main.go
 ```
 
-## 使用说明
-1. 修改conf/conf.yaml，设置相关数据库信息
-2. 访问http://localhost:1234，打开ui界面
-
 ## TODO
 - [x] 支持mysql
 - [x] 支持mssql
