@@ -14,6 +14,7 @@
       href="https://cdn.bootcss.com/highlight.js/9.15.10/styles/vs.min.css"
       rel="stylesheet"
     />
+    <script src="js/common.js"></script>
     <script src="https://cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
     <script src="https://cdn.bootcss.com/element-ui/2.12.0/index.js"></script>
     <script src="https://cdn.bootcss.com/axios/0.19.0/axios.min.js"></script>
@@ -22,21 +23,20 @@
     <script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/cs.min.js"></script>
     <script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/javascript.min.js"></script>
     <script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
-    <style></style>
   </head>
   <body>
     <div id="app" class="app-wrapper" v-cloak>
       <el-container :style="{height:clientHeight + 'px'}">
-        <el-header class="app-header">
+        <el-header ref="header" class="app-header">
           <div style="height: 65px;line-height: 65px;">
             <div class="logo">easygen</div>
             <div style="float: left; margin-left: 150px;">
               <el-button
-              @click="showProviderDialog"
-              icon="el-icon-s-tools"
-              title="切换数据源"
-              circle
-            ></el-button>
+                @click="showProviderDialog"
+                icon="el-icon-s-tools"
+                title="切换数据源"
+                circle
+              ></el-button>
               <el-button
                 v-show="code"
                 icon="el-icon-copy-document"
@@ -101,7 +101,7 @@
             >
             </el-tree>
           </el-aside>
-          <el-main class="app-main">
+          <el-main class="app-main" :style="{height:mainHeight + 'px'}">
             <pre
               v-highlight
               v-show="code"
@@ -128,7 +128,10 @@
             <el-input v-model="providerDialog.form.host" clearable></el-input>
           </el-form-item>
           <el-form-item label="username">
-            <el-input v-model="providerDialog.form.username" clearable></el-input>
+            <el-input
+              v-model="providerDialog.form.username"
+              clearable
+            ></el-input>
           </el-form-item>
           <el-form-item label="password">
             <el-input
@@ -138,7 +141,10 @@
             ></el-input>
           </el-form-item>
           <el-form-item label="database">
-            <el-input v-model="providerDialog.form.database" clearable></el-input>
+            <el-input
+              v-model="providerDialog.form.database"
+              clearable
+            ></el-input>
           </el-form-item>
         </el-form>
         <span slot="footer" class="dialog-footer">
@@ -150,8 +156,8 @@
     <script>
       const def_env = {
         csharp: [
-          { key: "Alias", value: "" },
-          { key: "Module", value: "" }
+          { key: "Alias", value: "Alias" },
+          { key: "Module", value: "Module" }
         ],
         golang: []
       };
@@ -181,18 +187,11 @@
 
       new Vue({
         el: "#app",
-        filters: {
-          decode: function(value) {
-            let temp = document.createElement("div");
-            temp.innerHTML = value;
-            let output = temp.innerText || temp.textContent;
-            temp = null;
-            return output;
-          }
-        },
         data: function() {
           return {
-            clientHeight: this.getViewportSize().height,
+            clientHeight: 0,
+            headerHeight: 0,
+            mainHeight: 0,
             visible: false,
             form: {
               table: null,
@@ -226,7 +225,19 @@
           this.getTemplates();
           this.initCopy();
         },
+        mounted() {
+          this.handleResize();
+          window.addEventListener("resize", this.handleResize);
+        },
+        beforeDestroy() {
+          window.removeEventListener("resize", this.handleResize);
+        },
         methods: {
+          handleResize() {
+            this.clientHeight = this.getViewportSize().height;
+            this.headerHeight = this.$refs.header.$el.offsetHeight;
+            this.mainHeight = this.clientHeight - this.headerHeight;
+          },
           initCopy() {
             let c = new ClipboardJS(".copy_code");
             c.on("success", () => {
@@ -307,7 +318,7 @@
               return this.showProviderDialog();
             }
 
-            this.code = res.data;
+            this.code = htmlEscape(res.data);
           }
         }
       });

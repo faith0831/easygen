@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"html"
 	"io/ioutil"
 	"path"
 	"path/filepath"
@@ -118,7 +117,7 @@ func (b *Builder) Generate(r *GenerateRequest) (string, error) {
 		return "", err
 	}
 
-	return html.EscapeString(buf.String()), nil
+	return buf.String(), nil
 }
 
 // GetTemplates 取模板列表
