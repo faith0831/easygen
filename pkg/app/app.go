@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"os"
@@ -14,12 +13,12 @@ import (
 )
 
 // Run Run
-func Run() {
+func Run() error {
 	a := Application{
 		b: &builder.Builder{},
 	}
 
-	a.run()
+	return a.run()
 }
 
 // Application 应用结构体
@@ -28,10 +27,11 @@ type Application struct {
 	ui lorca.UI
 }
 
-func (app *Application) run() {
-	ui, err := lorca.New("", "", 900, 700)
+func (app *Application) run() error {
+	args := []string{"--disable-extensions=true", "--enable-automation=false"}
+	ui, err := lorca.New("", "", 900, 700, args...)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer ui.Close()
 
@@ -39,7 +39,7 @@ func (app *Application) run() {
 
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer ln.Close()
 
@@ -52,12 +52,14 @@ func (app *Application) run() {
 	go http.Serve(ln, http.FileServer(http.Dir("./ui")))
 	ui.Load(fmt.Sprintf("http://%s", ln.Addr()))
 
-	sigc := make(chan os.Signal)
-	signal.Notify(sigc, os.Interrupt)
+	ch := make(chan os.Signal)
+	signal.Notify(ch, os.Interrupt)
 	select {
-	case <-sigc:
+	case <-ch:
 	case <-ui.Done():
 	}
+
+	return nil
 }
 
 // Ok Ok
