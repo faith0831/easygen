@@ -33,6 +33,7 @@ type Node struct {
 	Label    string  `json:"label"`
 	Value    string  `json:"value"`
 	Children []*Node `json:"children"`
+	Lang     string  `json:"lang"`
 }
 
 // Builder 生成器
@@ -122,45 +123,9 @@ func (b *Builder) Generate(r *GenerateRequest) (string, error) {
 
 // GetTemplates 取模板列表
 func (b *Builder) GetTemplates() ([]*Node, error) {
-	basePath := "./tpl"
-	items, err := ioutil.ReadDir(basePath)
-	if err != nil {
-		return nil, err
-	}
-
-	nodes := []*Node{}
-
-	for _, item := range items {
-		name := strings.TrimSuffix(item.Name(), path.Ext(item.Name()))
-		n := Node{
-			Label: name,
-			Value: name,
-		}
-
-		if item.IsDir() {
-			n.Children = []*Node{}
-			items, err := ioutil.ReadDir(filepath.Join(basePath, item.Name()))
-			if err != nil {
-				continue
-			}
-
-			for _, item := range items {
-				if item.IsDir() {
-					continue
-				}
-
-				name := strings.TrimSuffix(item.Name(), path.Ext(item.Name()))
-				n.Children = append(n.Children, &Node{
-					Label: name,
-					Value: name,
-				})
-			}
-		}
-
-		nodes = append(nodes, &n)
-	}
-
-	return nodes, nil
+	root := &Node{}
+	walk("./tpl", root)
+	return root.Children, nil
 }
 
 // GetTables 取数据表列表
@@ -170,4 +135,31 @@ func (b *Builder) GetTables() ([]string, error) {
 	}
 
 	return b.provider.GetTableNames()
+}
+
+func walk(dir string, node *Node) {
+	items, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return
+	}
+
+	if node.Children == nil {
+		node.Children = []*Node{}
+	}
+
+	for _, item := range items {
+		name := strings.TrimSuffix(item.Name(), path.Ext(item.Name()))
+		child := &Node{
+			Label: name,
+			Value: name,
+		}
+
+		node.Children = append(node.Children, child)
+
+		if item.IsDir() {
+			walk(filepath.Join(dir, item.Name()), child)
+		} else {
+
+		}
+	}
 }
