@@ -1,3 +1,4 @@
+{{- /* @env Alias 别名 */ -}}
 /// <summary>
 /// 获取{{  .Alias }}列表
 /// </summary>
