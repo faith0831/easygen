@@ -49,7 +49,7 @@ func (app *Application) run() error {
 	ui.Bind("api_getTables", app.GetTables)
 	ui.Bind("api_getTemplates", app.GetTemplates)
 
-	go http.Serve(ln, http.FileServer(http.Dir("./ui")))
+	go http.Serve(ln, http.FileServer(FS))
 	ui.Load(fmt.Sprintf("http://%s", ln.Addr()))
 
 	ch := make(chan os.Signal)

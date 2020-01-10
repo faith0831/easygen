@@ -7,7 +7,8 @@
 ```
 git clone https://github.com/faith0831/easygen
 cd easygen
-go run main.go
+go generate && go build -ldflags="-H windowsgui"
+easygen
 ```
 
 ## TODO
