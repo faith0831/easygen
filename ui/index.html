@@ -48,27 +48,27 @@
             </div>
             <div style="float: right;">
               <el-cascader
+                ref="cascader"
                 :options="templates"
+                :props="{label: 'name', value: 'name'}"
                 @change="selectTemplate"
                 placeholder="请选择代码模板"
               ></el-cascader>
               <el-button type="primary" @click="generate">生成代码</el-button>
               <el-popover
+                v-if="form.env && form.env.length > 0"
                 placement="bottom"
                 title="自定义变量"
-                width="200"
+                width="400"
                 trigger="click"
               >
                 <el-form>
                   <el-form-item :key="i" v-for="(item,i) in form.env">
-                    <el-col :span="11">
-                      <el-input
-                        v-model="item.key"
-                        placeholder="名称"
-                      ></el-input>
+                    <el-col :span="4">
+                      {{item.label}}
                     </el-col>
                     <el-col class="line" :span="2">&nbsp;</el-col>
-                    <el-col :span="11">
+                    <el-col :span="16">
                       <el-input
                         v-model="item.value"
                         placeholder="值"
@@ -154,14 +154,6 @@
       </el-dialog>
     </div>
     <script>
-      const def_env = {
-        csharp: [
-          { key: "Alias", value: "Alias" },
-          { key: "Module", value: "Module" }
-        ],
-        golang: []
-      };
-
       Vue.directive("highlight", {
         deep: true,
         componentUpdated: function componentUpdated(el, binding) {
@@ -282,14 +274,11 @@
             });
           },
           selectTemplate(data) {
-            if (data.length >= 2) {
-              this.form.lang = data[0];
-              this.form.template = data[1];
-              this.form.env = def_env[this.form.lang];
-            } else {
-              this.form.lang = "";
-              this.form.template = data[0];
-            }
+            let node = this.$refs.cascader.getCheckedNodes()[0];
+            this.form.lang = node.data.lang;
+            this.form.template = node.data.template;
+            this.form.env = node.data.env;
+            console.log(this.form)
           },
           selectTable(data) {
             this.form.table = data.label;
@@ -302,13 +291,15 @@
               return this.$message.warning("请选择代码的模板");
 
             let data = JSON.parse(JSON.stringify(this.form));
-            let env = {};
+            if (data.env) {
+              let env = {};
 
-            data.env.forEach(item => {
-              env[item.key] = item.value;
-            });
+              data.env.forEach(item => {
+                env[item.key] = item.value;
+              });
 
-            data.env = env;
+              data.env = env;
+            }
 
             let res = await api_generate(data);
             if (res.code === 0) {

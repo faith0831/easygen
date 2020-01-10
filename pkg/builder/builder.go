@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"text/template"
 
@@ -28,12 +29,20 @@ type GenerateRequest struct {
 	ENV      map[string]interface{} `json:"env"`
 }
 
+// ENV ENV
+type ENV struct {
+	Label string `json:"label"`
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
 // Node Node
 type Node struct {
-	Label    string  `json:"label"`
-	Value    string  `json:"value"`
+	Name     string  `json:"name"`
 	Children []*Node `json:"children"`
 	Lang     string  `json:"lang"`
+	Template string  `json:"template"`
+	ENV      []*ENV  `json:"env"`
 }
 
 // Builder 生成器
@@ -87,7 +96,7 @@ func (b *Builder) Generate(r *GenerateRequest) (string, error) {
 		return "", ErrNotFoundProvider
 	}
 
-	s, err := ioutil.ReadFile(fmt.Sprintf("./tpl/%s/%s.tpl", r.Lang, r.Template))
+	s, err := ioutil.ReadFile(r.Template)
 	if err != nil {
 		return "", err
 	}
@@ -148,18 +157,57 @@ func walk(dir string, node *Node) {
 	}
 
 	for _, item := range items {
-		name := strings.TrimSuffix(item.Name(), path.Ext(item.Name()))
+		tName := strings.TrimSuffix(item.Name(), path.Ext(item.Name()))
+		fName := filepath.Join(dir, item.Name())
+
 		child := &Node{
-			Label: name,
-			Value: name,
+			Name: tName,
 		}
 
 		node.Children = append(node.Children, child)
 
 		if item.IsDir() {
-			walk(filepath.Join(dir, item.Name()), child)
+			walk(fName, child)
 		} else {
-
+			buf, err := ioutil.ReadFile(fName)
+			if err == nil {
+				content := string(buf)
+				child.Template = fName
+				child.Lang = getLang(content)
+				child.ENV = getEnv(content)
+			}
 		}
 	}
+}
+
+func getLang(content string) string {
+	exp := regexp.MustCompile(`@lang\s+(\w+)`)
+	m := exp.FindStringSubmatch(content)
+	if len(m) > 1 {
+		return m[1]
+	}
+
+	return ""
+}
+
+func getEnv(content string) []*ENV {
+	var env []*ENV
+
+	exp := regexp.MustCompile(`@env\s+(\w+)\s+([\p{Han}a-zA-Z0-9_-]+)`)
+	items := exp.FindAllString(content, 100)
+
+	if len(items) > 0 {
+		env = make([]*ENV, len(items))
+
+		for index, item := range items {
+			m := exp.FindStringSubmatch(item)
+			env[index] = &ENV{
+				Key:   m[1],
+				Label: m[2],
+				Value: "",
+			}
+		}
+	}
+
+	return env
 }
