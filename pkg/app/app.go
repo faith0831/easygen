@@ -28,7 +28,7 @@ type Application struct {
 }
 
 func (app *Application) run() error {
-	args := []string{"--disable-extensions=true", "--enable-automation=false"}
+	args := []string{"--disable-features=TranslateUI"}
 	ui, err := lorca.New("", "", 900, 700, args...)
 	if err != nil {
 		return err
