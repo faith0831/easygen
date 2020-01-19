@@ -3,13 +3,8 @@
 
 ![](screenshots/1.png)
 
-## 安装部署
-```
-git clone https://github.com/faith0831/easygen
-cd easygen
-go generate && go build -ldflags="-H windowsgui"
-easygen
-```
+## 如何使用
+ [直接下载](https://github.com/faith0831/easygen/releases)编译好的二进制文件解压服用^_^
 
 ## TODO
 - [x] 支持mysql
