@@ -3,7 +3,7 @@
 
 ![](screenshots/1.png)
 
-## 如何使用
+## 如何安装
  [直接下载](https://github.com/faith0831/easygen/releases)编译好的二进制文件解压服用^_^
 
 ## TODO
