@@ -44,7 +44,7 @@
                 class="copy_code"
                 title="复制代码"
                 circle
-                :data-clipboard-text="code | decode"
+                :data-clipboard-text="source"
               ></el-button>
             </div>
             <div style="float: right;">
@@ -204,7 +204,8 @@
             },
             tables: [],
             templates: [],
-            code: ""
+            code: "",
+            source: ""
           };
         },
         async created() {
@@ -310,6 +311,7 @@
               return this.showProviderDialog();
             }
 
+            this.source = res.data;
             this.code = htmlEscape(res.data);
           }
         }
