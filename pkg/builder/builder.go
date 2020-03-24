@@ -11,6 +11,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/iancoleman/strcase"
+
 	"github.com/faith0831/easygen/pkg/db"
 	"github.com/faith0831/easygen/pkg/db/mssql"
 	"github.com/faith0831/easygen/pkg/db/mysql"
@@ -53,7 +55,10 @@ type Builder struct {
 }
 
 var funcMap = template.FuncMap{
-	"lower": strings.ToLower,
+	"lower":      strings.ToLower,
+	"snake":      strcase.ToSnake,
+	"camel":      strcase.ToCamel,
+	"lowerCamel": strcase.ToLowerCamel,
 }
 
 // HasProvider HasProvider

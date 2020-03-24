@@ -92,7 +92,7 @@
           </div>
         </el-header>
         <el-container>
-          <el-aside class="sidebar">
+          <el-aside class="sidebar" :style="{height:mainHeight + 'px'}">
             <el-tree
               :data="tables"
               node-key="id"
