@@ -59,6 +59,7 @@ var funcMap = template.FuncMap{
 	"snake":      strcase.ToSnake,
 	"camel":      strcase.ToCamel,
 	"lowerCamel": strcase.ToLowerCamel,
+	"kebab":      strcase.ToKebab,
 }
 
 // HasProvider HasProvider
