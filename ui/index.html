@@ -39,6 +39,12 @@
                 circle
               ></el-button>
               <el-button
+                @click="getTables"
+                icon="el-icon-refresh"
+                title="重新加载表"
+                circle
+              ></el-button>
+              <el-button
                 v-show="code"
                 icon="el-icon-copy-document"
                 class="copy_code"
