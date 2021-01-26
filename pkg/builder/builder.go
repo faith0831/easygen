@@ -108,6 +108,10 @@ func (b *Builder) Generate(r *GenerateRequest) (string, error) {
 		return "", err
 	}
 
+	if len(r.Lang) == 0 {
+		r.Lang = getLang(string(s))
+	}
+
 	table, err := b.provider.GetTable(r.Table)
 	if err != nil {
 		return "", err

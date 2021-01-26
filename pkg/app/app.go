@@ -2,13 +2,16 @@ package app
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
 
 	"github.com/faith0831/easygen/pkg/builder"
+	"github.com/faith0831/easygen/pkg/config"
 
+	"github.com/jessevdk/go-flags"
 	"github.com/zserge/lorca"
 )
 
@@ -18,13 +21,63 @@ func Run() error {
 		b: &builder.Builder{},
 	}
 
-	return a.run()
+	if len(os.Args) > 0 {
+		return a.gen()
+	} else {
+		return a.run()
+	}
 }
 
 // Application 应用结构体
 type Application struct {
 	b  *builder.Builder
 	ui lorca.UI
+}
+
+// GenOptions 生成的参数
+type GenOptions struct {
+	Template string            `long:"template" description:"模板名称" required:"true"`
+	Table    string            `long:"table" description:"表名" required:"true"`
+	Env      map[string]string `long:"env" description:"自定义变量"`
+}
+
+func (app *Application) gen() error {
+	var options GenOptions
+	var parser = flags.NewParser(&options, flags.Default)
+	if _, err := parser.ParseArgs(os.Args); err != nil {
+		log.Fatal(err)
+	}
+
+	c, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = app.b.CreateProvider(c)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	req := builder.GenerateRequest{
+		Table:    options.Table,
+		Template: options.Template,
+		ENV:      map[string]interface{}{},
+	}
+
+	if len(options.Env) > 0 {
+		for k, v := range options.Env {
+			req.ENV[k] = v
+		}
+	}
+
+	s, err := app.b.Generate(&req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Print(s)
+
+	return nil
 }
 
 func (app *Application) run() error {
