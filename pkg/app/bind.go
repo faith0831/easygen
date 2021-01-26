@@ -23,8 +23,8 @@ func (app *Application) HasProvider() map[string]interface{} {
 }
 
 // CreateProvider 创建数据源
-func (app *Application) CreateProvider(o *builder.Options) map[string]interface{} {
-	err := app.b.CreateProvider(o)
+func (app *Application) CreateProvider(c *config.Config) map[string]interface{} {
+	err := app.b.CreateProvider(c)
 	if err != nil {
 		return app.Error(err.Error())
 	}

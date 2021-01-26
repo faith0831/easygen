@@ -13,6 +13,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 
+	"github.com/faith0831/easygen/pkg/config"
 	"github.com/faith0831/easygen/pkg/db"
 	"github.com/faith0831/easygen/pkg/db/mssql"
 	"github.com/faith0831/easygen/pkg/db/mysql"
@@ -68,29 +69,29 @@ func (b *Builder) HasProvider() bool {
 }
 
 // CreateProvider CreateProvider
-func (b *Builder) CreateProvider(o *Options) error {
-	if o.Driver == mysql.ProviderName {
-		conn := fmt.Sprintf("%s:%s@tcp(%s)/%s?parseTime=true&loc=Local", o.Username, o.Password, o.Host, o.Database)
+func (b *Builder) CreateProvider(c *config.Config) error {
+	if c.Driver == mysql.ProviderName {
+		conn := fmt.Sprintf("%s:%s@tcp(%s)/%s?parseTime=true&loc=Local", c.Username, c.Password, c.Host, c.Database)
 		p1, err := mysql.New(conn)
 		if err != nil {
 			return fmt.Errorf("连接mysql %w", err)
 		}
 
-		b.driver = o.Driver
+		b.driver = c.Driver
 		b.provider = p1
 		b.mapping = mysql.TypeMapping
-	} else if o.Driver == mssql.ProviderName {
-		conn := fmt.Sprintf("user id=%s;password=%s;server=%s;database=%s", o.Username, o.Password, o.Host, o.Database)
+	} else if c.Driver == mssql.ProviderName {
+		conn := fmt.Sprintf("user id=%s;password=%s;server=%s;database=%s", c.Username, c.Password, c.Host, c.Database)
 		p1, err := mssql.New(conn)
 		if err != nil {
 			return fmt.Errorf("连接mssql %w", err)
 		}
 
-		b.driver = o.Driver
+		b.driver = c.Driver
 		b.provider = p1
 		b.mapping = mssql.TypeMapping
 	} else {
-		return fmt.Errorf("不支持数据库%s", o.Driver)
+		return fmt.Errorf("不支持数据库%s", c.Driver)
 	}
 
 	return nil
