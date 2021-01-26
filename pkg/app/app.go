@@ -21,7 +21,7 @@ func Run() error {
 		b: &builder.Builder{},
 	}
 
-	if len(os.Args) > 0 {
+	if len(os.Args) > 1 {
 		return a.gen()
 	} else {
 		return a.run()
