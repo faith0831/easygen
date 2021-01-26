@@ -4,7 +4,18 @@ import (
 	"errors"
 
 	"github.com/faith0831/easygen/pkg/builder"
+	"github.com/faith0831/easygen/pkg/config"
 )
+
+// GetConfig 取配置信息
+func (app *Application) GetConfig() map[string]interface{} {
+	c, err := config.LoadConfig()
+	if err != nil {
+		return app.Error(err.Error())
+	}
+
+	return app.Ok(c)
+}
 
 // HasProvider 是否已创建数据源
 func (app *Application) HasProvider() map[string]interface{} {

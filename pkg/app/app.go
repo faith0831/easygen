@@ -43,6 +43,7 @@ func (app *Application) run() error {
 	}
 	defer ln.Close()
 
+	ui.Bind("api_getConfig", app.GetConfig)
 	ui.Bind("api_hasProvider", app.HasProvider)
 	ui.Bind("api_createProvider", app.CreateProvider)
 	ui.Bind("api_generate", app.Generate)

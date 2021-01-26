@@ -1,0 +1,5 @@
+driver: "mysql"
+host: "127.0.0.1:3306"
+database: "demo"
+username: "test"
+password: "123456"
