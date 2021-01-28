@@ -1,3 +1,4 @@
 .vscode
 dist
-easygen.exe
+ui.exe
+cli.exe

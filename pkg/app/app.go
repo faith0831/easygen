@@ -21,11 +21,16 @@ func Run() error {
 		b: &builder.Builder{},
 	}
 
-	if len(os.Args) > 1 {
-		return a.gen()
-	} else {
-		return a.run()
+	return a.run()
+}
+
+// Gen Gen
+func Gen() error {
+	a := Application{
+		b: &builder.Builder{},
 	}
+
+	return a.gen()
 }
 
 // Application 应用结构体
