@@ -53,6 +53,7 @@ type Builder struct {
 	driver   string
 	provider db.Provider
 	mapping  db.TypeMappingFunc
+	prefixes []string
 }
 
 var funcMap = template.FuncMap{
@@ -80,6 +81,7 @@ func (b *Builder) CreateProvider(c *config.Config) error {
 		b.driver = c.Driver
 		b.provider = p1
 		b.mapping = mysql.TypeMapping
+		b.prefixes = strings.Split(c.Prefixes, ",")
 	} else if c.Driver == mssql.ProviderName {
 		conn := fmt.Sprintf("user id=%s;password=%s;server=%s;database=%s", c.Username, c.Password, c.Host, c.Database)
 		p1, err := mssql.New(conn)
@@ -90,6 +92,7 @@ func (b *Builder) CreateProvider(c *config.Config) error {
 		b.driver = c.Driver
 		b.provider = p1
 		b.mapping = mssql.TypeMapping
+		b.prefixes = strings.Split(c.Prefixes, ",")
 	} else {
 		return fmt.Errorf("不支持数据库%s", c.Driver)
 	}
@@ -128,6 +131,12 @@ func (b *Builder) Generate(r *GenerateRequest) (string, error) {
 
 	if r.ENV == nil {
 		r.ENV = make(map[string]interface{})
+	}
+
+	if len(b.prefixes) > 0 {
+		for _, prefix := range b.prefixes {
+			table.Name = strings.Replace(table.Name, strings.Trim(prefix, " "), "", 1)
+		}
 	}
 
 	r.ENV["Table"] = table

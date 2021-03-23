@@ -13,6 +13,7 @@ type Config struct {
 	Username string `json:"username" yaml:"username"`
 	Password string `json:"password" yaml:"password"`
 	Database string `json:"database" yaml:"database"`
+	Prefixes string `json:"prefixes" yaml:"prefixes"`
 }
 
 // LoadConfig LoadConfig
