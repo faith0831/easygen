@@ -5,7 +5,7 @@ import (
 )
 
 var csharpMapping = map[string]string{
-	"bigint":           "bool",
+	"bigint":           "long",
 	"binary":           "byte[]",
 	"bit":              "bool",
 	"char":             "char",
@@ -39,7 +39,7 @@ var csharpMapping = map[string]string{
 }
 
 var golangMapping = map[string]string{
-	"bigint":           "bool",
+	"bigint":           "int",
 	"binary":           "[]byte",
 	"bit":              "bool",
 	"char":             "string",
@@ -73,7 +73,7 @@ var golangMapping = map[string]string{
 }
 
 var golangNullMapping = map[string]string{
-	"bigint":           "bool",
+	"bigint":           "int",
 	"binary":           "[]byte",
 	"bit":              "bool",
 	"char":             "string",
