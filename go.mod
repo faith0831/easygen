@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/denisenkom/go-mssqldb v0.9.0
+	github.com/go-openapi/inflect v0.19.0 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/iancoleman/strcase v0.1.3
 	github.com/jessevdk/go-flags v1.4.0

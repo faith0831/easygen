@@ -58,6 +58,8 @@ type Builder struct {
 
 var funcMap = template.FuncMap{
 	"lower":      strings.ToLower,
+	"upper":      strings.ToUpper,
+	"pascal":     pascal,
 	"snake":      strcase.ToSnake,
 	"camel":      strcase.ToCamel,
 	"lowerCamel": strcase.ToLowerCamel,
