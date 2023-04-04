@@ -86,7 +86,7 @@ func (app *Application) gen() error {
 }
 
 func (app *Application) run() error {
-	args := []string{"--disable-features=TranslateUI"}
+	args := []string{"--disable-features=TranslateUI", "--remote-allow-origins=*"}
 	ui, err := lorca.New("", "", 900, 700, args...)
 	if err != nil {
 		return err
