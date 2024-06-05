@@ -1,24 +1,26 @@
 package app
 
 import (
+	"context"
+	"embed"
 	"fmt"
 	"log"
-	"net"
-	"net/http"
 	"os"
-	"os/signal"
 
 	"github.com/faith0831/easygen/pkg/builder"
 	"github.com/faith0831/easygen/pkg/config"
-
 	"github.com/jessevdk/go-flags"
-	"github.com/zserge/lorca"
+
+	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
 // Run Run
-func Run() error {
+func Run(assets *embed.FS) error {
 	a := Application{
-		b: &builder.Builder{},
+		assets: assets,
+		b:      &builder.Builder{},
 	}
 
 	return a.run()
@@ -35,8 +37,8 @@ func Gen() error {
 
 // Application 应用结构体
 type Application struct {
-	b  *builder.Builder
-	ui lorca.UI
+	assets *embed.FS
+	b      *builder.Builder
 }
 
 // GenOptions 生成的参数
@@ -85,37 +87,26 @@ func (app *Application) gen() error {
 	return nil
 }
 
+func (app *Application) startup(ctx context.Context) {
+}
+
 func (app *Application) run() error {
-	args := []string{"--disable-features=TranslateUI", "--remote-allow-origins=*"}
-	ui, err := lorca.New("", "", 900, 700, args...)
+	err := wails.Run(&options.App{
+		Title:  "easygen ver2.0 - 简单易用的代码生成器",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: app.assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		OnStartup:        app.startup,
+		Bind: []interface{}{
+			app,
+		},
+	})
+
 	if err != nil {
-		return err
-	}
-	defer ui.Close()
-
-	app.ui = ui
-
-	ln, err := net.Listen("tcp", "127.0.0.1:0")
-	if err != nil {
-		return err
-	}
-	defer ln.Close()
-
-	ui.Bind("api_getConfig", app.GetConfig)
-	ui.Bind("api_hasProvider", app.HasProvider)
-	ui.Bind("api_createProvider", app.CreateProvider)
-	ui.Bind("api_generate", app.Generate)
-	ui.Bind("api_getTables", app.GetTables)
-	ui.Bind("api_getTemplates", app.GetTemplates)
-
-	go http.Serve(ln, http.FileServer(FS))
-	ui.Load(fmt.Sprintf("http://%s", ln.Addr()))
-
-	ch := make(chan os.Signal)
-	signal.Notify(ch, os.Interrupt)
-	select {
-	case <-ch:
-	case <-ui.Done():
+		println("Error:", err.Error())
 	}
 
 	return nil

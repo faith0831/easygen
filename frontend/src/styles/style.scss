@@ -1,0 +1,107 @@
+html {
+  overflow-y: hidden;
+  background-color: #fff;
+}
+
+*::-webkit-scrollbar-track-piece {
+  background: #d3dce6;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #99a9bf;
+  border-radius: 20px;
+}
+
+[v-cloak] {
+  display: none;
+}
+
+.logo {
+  padding-left: 10px;
+  float: left;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #000;
+  width: 250px;
+}
+
+.main-left {
+  display: flex;
+  flex-direction: column;
+  width: 250px !important;
+  height: calc(100vh - 73px);
+}
+
+.main-left .toolbox {
+  border: 1px solid rgb(204, 204, 204);
+  padding-left: 20px;
+  height: 40px;
+  border-bottom-width: 0px;
+  align-items: center;
+}
+
+.main-left .tree {
+  border: 1px solid #ccc;
+  flex: 1;
+  overflow: hidden;
+  overflow-y: auto;
+}
+
+.main-right .el-tabs__content {
+  padding: 0px;
+}
+
+.main-right .el-tab-pane pre {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 115px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.main-right .el-tab-pane pre .hljs {
+  flex: 1;
+}
+
+.el-main {
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-right: 0px;
+  padding-left: 10px;
+}
+
+pre {
+  margin: 0px;
+}
+
+.app-wrapper {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+.app-header {
+  display: block;
+  padding: 0 10px 0 0;
+  background-color: #fff;
+  line-height: 45px;
+  -webkit-box-shadow: 0 2px 2px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(0, 0, 0, 0.04);
+  z-index: 2;
+}
+
+.gen-dialog {
+  align-items: self-end;
+}
+
+.gen-dialog .el-card__body {
+  overflow: hidden;
+  overflow-y: auto;
+  height: 350px;
+}

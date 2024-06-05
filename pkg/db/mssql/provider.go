@@ -41,7 +41,7 @@ const (
 	SELECT colid
 	FROM syscolumns
 	WHERE (id = a.id) AND (name = a.name))))))) AND (xtype = 'PK')) > 0 THEN 1 ELSE 0 END) N'IsPK',
-		b.name N'DataType', 
+		b.name N'DbType', 
 		(CASE WHEN a.isnullable = 1 THEN 1 ELSE 0 END) N'IsNull', ISNULL(e.text,'') N'DefaultValue', ISNULL(g.[value],'') AS N'Comment'
 	FROM syscolumns a
 	LEFT JOIN systypes b ON a.xtype = b.xusertype
@@ -98,5 +98,10 @@ func (p *Provider) GetTable(tableName string) (*db.Table, error) {
 		return nil, err
 	}
 
-	return &db.Table{Name: tableName, Columns: columns}, nil
+	return &db.Table{Name: tableName, OriginalName: tableName, Columns: columns}, nil
+}
+
+// GetMappingType 取映射的数据类型
+func (p *Provider) GetMappingType(lang string, typ string, isNull bool) string {
+	return db.GetMappingType(ProviderName, lang, typ, isNull)
 }

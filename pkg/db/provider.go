@@ -4,7 +4,5 @@ package db
 type Provider interface {
 	GetTableNames() ([]string, error)
 	GetTable(tableName string) (*Table, error)
+	GetMappingType(lang string, typ string, isNull bool) string
 }
-
-// TypeMappingFunc 数据type转换函数
-type TypeMappingFunc func(lang string, typ string, isNull bool) string

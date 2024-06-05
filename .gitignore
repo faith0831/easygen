@@ -1,4 +1,4 @@
 .vscode
-dist
-ui.exe
-cli.exe
+build/bin
+node_modules
+frontend/dist

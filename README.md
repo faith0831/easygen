@@ -2,6 +2,7 @@
 一款简单易用的代码生成器，可以有效减少重复劳动，提升开发效率。
 
 ![](screenshots/1.png)
+![](screenshots/2.png)
 
 ## 如何安装
  [直接下载](https://github.com/faith0831/easygen/releases)编译好的二进制文件解压服用^_^
@@ -12,5 +13,5 @@
 - [x] 支持csharp
 - [x] 初步支持golang
 - [x] 简易的ui
-- [ ] 优化ui
-- [ ] 支持更多语言
+- [x] 优化ui
+- [x] 支持更多语言

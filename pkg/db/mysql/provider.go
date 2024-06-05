@@ -30,7 +30,7 @@ const (
 		COLUMN_NAME AS 'Name',
 		(CASE EXTRA WHEN 'auto_increment' THEN 1 ELSE 0 END) AS 'IsInc',
 		(CASE COLUMN_KEY WHEN 'PRI' THEN 1 ELSE 0 END) AS 'IsPK',
-		DATA_TYPE AS 'DataType',
+		DATA_TYPE AS 'DbType',
 		(CASE IS_NULLABLE WHEN 'YES' THEN 1 ELSE 0 END) AS 'IsNull', 
 		IFNULL(COLUMN_DEFAULT, '') AS 'DefaultValue', 
 		IFNULL(COLUMN_COMMENT, '') AS 'Comment'
@@ -87,5 +87,10 @@ func (p *Provider) GetTable(tableName string) (*db.Table, error) {
 		return nil, err
 	}
 
-	return &db.Table{Name: tableName, Columns: columns}, nil
+	return &db.Table{Name: tableName, OriginalName: tableName, Columns: columns}, nil
+}
+
+// GetMappingType 取映射的数据类型
+func (p *Provider) GetMappingType(lang string, typ string, isNull bool) string {
+	return db.GetMappingType(ProviderName, lang, typ, isNull)
 }

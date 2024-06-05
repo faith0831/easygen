@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -52,8 +52,8 @@ type Node struct {
 type Builder struct {
 	driver   string
 	provider db.Provider
-	mapping  db.TypeMappingFunc
 	prefixes []string
+	config   *config.Config
 }
 
 var funcMap = template.FuncMap{
@@ -67,37 +67,35 @@ var funcMap = template.FuncMap{
 }
 
 // HasProvider HasProvider
-func (b *Builder) HasProvider() bool {
-	return b.provider != nil
+func (b *Builder) HasProvider() (bool, *config.Config) {
+	return b.provider != nil, b.config
 }
 
 // CreateProvider CreateProvider
 func (b *Builder) CreateProvider(c *config.Config) error {
 	if c.Driver == mysql.ProviderName {
 		conn := fmt.Sprintf("%s:%s@tcp(%s)/%s?parseTime=true&loc=Local", c.Username, c.Password, c.Host, c.Database)
-		p1, err := mysql.New(conn)
+		provider, err := mysql.New(conn)
 		if err != nil {
 			return fmt.Errorf("连接mysql %w", err)
 		}
 
-		b.driver = c.Driver
-		b.provider = p1
-		b.mapping = mysql.TypeMapping
-		b.prefixes = strings.Split(c.Prefixes, ",")
+		b.provider = provider
 	} else if c.Driver == mssql.ProviderName {
 		conn := fmt.Sprintf("user id=%s;password=%s;server=%s;database=%s", c.Username, c.Password, c.Host, c.Database)
-		p1, err := mssql.New(conn)
+		provider, err := mssql.New(conn)
 		if err != nil {
 			return fmt.Errorf("连接mssql %w", err)
 		}
 
-		b.driver = c.Driver
-		b.provider = p1
-		b.mapping = mssql.TypeMapping
-		b.prefixes = strings.Split(c.Prefixes, ",")
+		b.provider = provider
 	} else {
 		return fmt.Errorf("不支持数据库%s", c.Driver)
 	}
+
+	b.driver = c.Driver
+	b.prefixes = strings.Split(c.Prefixes, ",")
+	b.config = c
 
 	return nil
 }
@@ -108,7 +106,7 @@ func (b *Builder) Generate(r *GenerateRequest) (string, error) {
 		return "", ErrNotFoundProvider
 	}
 
-	s, err := ioutil.ReadFile(r.Template)
+	s, err := os.ReadFile(r.Template)
 	if err != nil {
 		return "", err
 	}
@@ -123,7 +121,7 @@ func (b *Builder) Generate(r *GenerateRequest) (string, error) {
 	}
 
 	for _, c := range table.Columns {
-		c.LangDataType = b.mapping(r.Lang, c.DataType, c.IsNull)
+		c.LangDataType = b.provider.GetMappingType(r.Lang, c.DbType, c.IsNull)
 	}
 
 	t, err := template.New("builder").Funcs(funcMap).Parse(string(s))
@@ -155,7 +153,7 @@ func (b *Builder) Generate(r *GenerateRequest) (string, error) {
 // GetTemplates 取模板列表
 func (b *Builder) GetTemplates() ([]*Node, error) {
 	root := &Node{}
-	walk("./tpl", root)
+	walk("./conf/template", root)
 	return root.Children, nil
 }
 
@@ -169,7 +167,7 @@ func (b *Builder) GetTables() ([]string, error) {
 }
 
 func walk(dir string, node *Node) {
-	items, err := ioutil.ReadDir(dir)
+	items, err := os.ReadDir(dir)
 	if err != nil {
 		return
 	}
@@ -191,7 +189,7 @@ func walk(dir string, node *Node) {
 		if item.IsDir() {
 			walk(fName, child)
 		} else {
-			buf, err := ioutil.ReadFile(fName)
+			buf, err := os.ReadFile(fName)
 			if err == nil {
 				content := string(buf)
 				child.Template = fName

@@ -1,7 +1,8 @@
 package config
 
 import (
-	"io/ioutil"
+	"fmt"
+	"os"
 
 	"gopkg.in/yaml.v3"
 )
@@ -18,7 +19,7 @@ type Config struct {
 
 // LoadConfig LoadConfig
 func LoadConfig() (*Config, error) {
-	data, err := ioutil.ReadFile("./conf/config.yml")
+	data, err := os.ReadFile("./conf/config.json")
 	if err != nil {
 		return nil, err
 	}
@@ -29,5 +30,36 @@ func LoadConfig() (*Config, error) {
 		return nil, err
 	}
 
+	return conf, nil
+}
+
+type MappingItem struct {
+	Underlying string `json:"underlying" yaml:"underlying"`
+	Nullable   string `json:"nullable" yaml:"nullable"`
+}
+
+type MappingConfig = map[string]*MappingItem
+
+var mappingCaches = map[string]MappingConfig{}
+
+// LoadMappingConfig LoadMappingConfig
+func LoadMappingConfig(lang string, providerName string) (MappingConfig, error) {
+	path := fmt.Sprintf("./conf/language/%s/%s.json", lang, providerName)
+	if conf, ok := mappingCaches[path]; ok {
+		return conf, nil
+	}
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	conf := MappingConfig{}
+	err = yaml.Unmarshal(data, conf)
+	if err != nil {
+		return nil, err
+	}
+
+	mappingCaches[path] = conf
 	return conf, nil
 }

@@ -19,7 +19,11 @@ func (app *Application) GetConfig() map[string]interface{} {
 
 // HasProvider 是否已创建数据源
 func (app *Application) HasProvider() map[string]interface{} {
-	return app.Ok(app.b.HasProvider())
+	has, config := app.b.HasProvider()
+	return app.Ok(map[string]interface{}{
+		"has":    has,
+		"config": config,
+	})
 }
 
 // CreateProvider 创建数据源
