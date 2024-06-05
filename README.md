@@ -2,6 +2,7 @@
 一款简单易用的代码生成器，可以有效减少重复劳动，提升开发效率。
 
 A simple and easy-to-use code generator that can effectively reduce repetitive work and improve development efficiency.
+
 ![](screenshots/1.png)
 ![](screenshots/2.png)
 
