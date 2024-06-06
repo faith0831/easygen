@@ -85,12 +85,15 @@ Section
     
     !insertmacro wails.files
 
-    File /r "$EXEDIR\conf"
-
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
     CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
 
     !insertmacro wails.writeUninstaller
+SectionEnd
+
+Section
+    SetOutPath $INSTDIR\conf
+    File /r ..\..\..\conf\*.*
 SectionEnd
 
 Section "uninstall" 
