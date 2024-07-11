@@ -92,7 +92,7 @@ func (app *Application) startup(ctx context.Context) {
 
 func (app *Application) run() error {
 	err := wails.Run(&options.App{
-		Title:  "easygen ver2.0 - 简单易用的代码生成器",
+		Title:  "easygen ver2.0.1 - 简单易用的代码生成器",
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{

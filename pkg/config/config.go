@@ -1,20 +1,21 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
-
-	"gopkg.in/yaml.v3"
 )
 
 // Config Config
 type Config struct {
-	Driver   string `json:"driver" yaml:"driver"`
-	Host     string `json:"host" yaml:"host"`
-	Username string `json:"username" yaml:"username"`
-	Password string `json:"password" yaml:"password"`
-	Database string `json:"database" yaml:"database"`
-	Prefixes string `json:"prefixes" yaml:"prefixes"`
+	Driver                 string `json:"driver"`
+	Host                   string `json:"host"`
+	Username               string `json:"username"`
+	Password               string `json:"password"`
+	Database               string `json:"database"`
+	FilteredTablePrefixes  string `json:"filteredTablePrefixes"`
+	FilteredCreatedColumns string `json:"filteredCreatedColumns"`
+	FilteredUpdatedColumns string `json:"filteredUpdatedColumns"`
 }
 
 // LoadConfig LoadConfig
@@ -25,7 +26,7 @@ func LoadConfig() (*Config, error) {
 	}
 
 	conf := &Config{}
-	err = yaml.Unmarshal(data, conf)
+	err = json.Unmarshal(data, conf)
 	if err != nil {
 		return nil, err
 	}
@@ -33,9 +34,24 @@ func LoadConfig() (*Config, error) {
 	return conf, nil
 }
 
+// SaveConfig SaveConfig
+func SaveConfig(c *Config) error {
+	data, err := json.MarshalIndent(c, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile("./conf/config.json", data, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type MappingItem struct {
-	Underlying string `json:"underlying" yaml:"underlying"`
-	Nullable   string `json:"nullable" yaml:"nullable"`
+	Underlying string `json:"underlying"`
+	Nullable   string `json:"nullable"`
 }
 
 type MappingConfig = map[string]*MappingItem
@@ -55,7 +71,7 @@ func LoadMappingConfig(lang string, providerName string) (MappingConfig, error) 
 	}
 
 	conf := MappingConfig{}
-	err = yaml.Unmarshal(data, conf)
+	err = json.Unmarshal(data, &conf)
 	if err != nil {
 		return nil, err
 	}

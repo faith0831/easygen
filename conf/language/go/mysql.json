@@ -3,7 +3,7 @@
   "bit": { "underlying": "bool", "nullable": "bool" },
   "smallint": { "underlying": "int", "nullable": "int" },
   "mediumint": { "underlying": "int", "nullable": "int" },
-  "int": { "underlying": "int", "nullable": "int?" },
+  "int": { "underlying": "int", "nullable": "int" },
   "integer": { "underlying": "int", "nullable": "int" },
   "bigint": { "underlying": "long", "nullable": "long" },
   "float": { "underlying": "float64", "nullable": "float64" },

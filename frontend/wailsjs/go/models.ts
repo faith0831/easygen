@@ -18,6 +18,18 @@ export namespace builder {
 	        this.env = source["env"];
 	    }
 	}
+	export class GetGenerateColumnRequest {
+	    table: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new GetGenerateColumnRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.table = source["table"];
+	    }
+	}
 
 }
 
@@ -29,7 +41,9 @@ export namespace config {
 	    username: string;
 	    password: string;
 	    database: string;
-	    prefixes: string;
+	    filteredTablePrefixes: string;
+	    filteredCreatedColumns: string;
+	    filteredUpdatedColumns: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -42,7 +56,9 @@ export namespace config {
 	        this.username = source["username"];
 	        this.password = source["password"];
 	        this.database = source["database"];
-	        this.prefixes = source["prefixes"];
+	        this.filteredTablePrefixes = source["filteredTablePrefixes"];
+	        this.filteredCreatedColumns = source["filteredCreatedColumns"];
+	        this.filteredUpdatedColumns = source["filteredUpdatedColumns"];
 	    }
 	}
 

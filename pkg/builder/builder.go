@@ -8,6 +8,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"text/template"
 
@@ -32,6 +33,41 @@ type GenerateRequest struct {
 	ENV      map[string]interface{} `json:"env"`
 }
 
+type GetGenerateColumnRequest struct {
+	Table string `json:"table"`
+}
+
+type GenerateColumn struct {
+	Name          string `json:"name"`
+	Alias         string `json:"alias"`
+	LangFieldName string `json:"langFieldName"`
+	LangFieldType string `json:"langFieldType"`
+	DbFieldName   string `json:"dbFieldName"`
+	DbFieldType   string `json:"dbFieldType"`
+	Required      bool   `json:"required"`
+	Sorted        bool   `json:"sorted"`
+	IsList        bool   `json:"isList"`
+	IsAdd         bool   `json:"isAdd"`
+	IsEdit        bool   `json:"isEdit"`
+	Type          string `json:"type"`
+}
+
+type GenerateContext struct {
+	Lang                   string
+	Table                  *db.Table
+	ENV                    map[string]interface{}
+	FilteredCreatedColumns []string
+	FilteredUpdatedColumns []string
+}
+
+func (ctx GenerateContext) SkipCreate(c *db.Column) bool {
+	return slices.Contains(ctx.FilteredCreatedColumns, c.Name)
+}
+
+func (ctx GenerateContext) SkipUpdate(c *db.Column) bool {
+	return slices.Contains(ctx.FilteredUpdatedColumns, c.Name)
+}
+
 // ENV ENV
 type ENV struct {
 	Label string `json:"label"`
@@ -50,20 +86,21 @@ type Node struct {
 
 // Builder 生成器
 type Builder struct {
-	driver   string
-	provider db.Provider
-	prefixes []string
-	config   *config.Config
+	driver                 string
+	provider               db.Provider
+	filteredTablePrefixes  []string
+	filteredCreatedColumns []string
+	filteredUpdatedColumns []string
+	config                 *config.Config
 }
 
 var funcMap = template.FuncMap{
-	"lower":      strings.ToLower,
-	"upper":      strings.ToUpper,
-	"pascal":     pascal,
-	"snake":      strcase.ToSnake,
-	"camel":      strcase.ToCamel,
-	"lowerCamel": strcase.ToLowerCamel,
-	"kebab":      strcase.ToKebab,
+	"lower":  strings.ToLower,
+	"upper":  strings.ToUpper,
+	"pascal": strcase.ToCamel,
+	"snake":  strcase.ToSnake,
+	"camel":  strcase.ToLowerCamel,
+	"kebab":  strcase.ToKebab,
 }
 
 // HasProvider HasProvider
@@ -94,8 +131,12 @@ func (b *Builder) CreateProvider(c *config.Config) error {
 	}
 
 	b.driver = c.Driver
-	b.prefixes = strings.Split(c.Prefixes, ",")
+	b.filteredTablePrefixes = strings.Split(c.FilteredTablePrefixes, ",")
+	b.filteredCreatedColumns = strings.Split(c.FilteredCreatedColumns, ",")
+	b.filteredUpdatedColumns = strings.Split(c.FilteredUpdatedColumns, ",")
 	b.config = c
+
+	config.SaveConfig(c)
 
 	return nil
 }
@@ -124,6 +165,10 @@ func (b *Builder) Generate(r *GenerateRequest) (string, error) {
 		c.LangDataType = b.provider.GetMappingType(r.Lang, c.DbType, c.IsNull)
 	}
 
+	funcMap["IsList"] = func(ctx GenerateContext) string {
+		return ctx.Lang
+	}
+
 	t, err := template.New("builder").Funcs(funcMap).Parse(string(s))
 	if err != nil {
 		return "", err
@@ -133,21 +178,50 @@ func (b *Builder) Generate(r *GenerateRequest) (string, error) {
 		r.ENV = make(map[string]interface{})
 	}
 
-	if len(b.prefixes) > 0 {
-		for _, prefix := range b.prefixes {
+	if len(b.filteredTablePrefixes) > 0 {
+		for _, prefix := range b.filteredTablePrefixes {
 			table.Name = strings.Replace(table.Name, strings.Trim(prefix, " "), "", 1)
 		}
 	}
 
-	r.ENV["Table"] = table
+	ctx := GenerateContext{
+		Lang:                   r.Lang,
+		ENV:                    r.ENV,
+		Table:                  table,
+		FilteredCreatedColumns: b.filteredCreatedColumns,
+		FilteredUpdatedColumns: b.filteredUpdatedColumns,
+	}
 
 	buf := new(bytes.Buffer)
-	err = t.Execute(buf, r.ENV)
+	err = t.Execute(buf, ctx)
 	if err != nil {
 		return "", err
 	}
 
 	return buf.String(), nil
+}
+
+func (b *Builder) GetGenerateColumns(table string) ([]*GenerateColumn, error) {
+	if b.provider == nil {
+		return nil, ErrNotFoundProvider
+	}
+
+	tb, err := b.provider.GetTable(table)
+	if err != nil {
+		return nil, err
+	}
+
+	colums := []*GenerateColumn{}
+	for _, c := range tb.Columns {
+		colums = append(colums, &GenerateColumn{
+			Name:        strcase.ToCamel(c.Name),
+			Alias:       c.Comment,
+			DbFieldName: c.Name,
+			DbFieldType: c.DbType,
+		})
+	}
+
+	return colums, nil
 }
 
 // GetTemplates 取模板列表

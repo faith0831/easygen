@@ -13,6 +13,8 @@ export function Generate(arg1:builder.GenerateRequest):Promise<{[key: string]: a
 
 export function GetConfig():Promise<{[key: string]: any}>;
 
+export function GetGenerateColumns(arg1:builder.GetGenerateColumnRequest):Promise<{[key: string]: any}>;
+
 export function GetTables():Promise<{[key: string]: any}>;
 
 export function GetTemplates():Promise<{[key: string]: any}>;

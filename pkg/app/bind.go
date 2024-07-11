@@ -73,3 +73,16 @@ func (app *Application) Generate(r *builder.GenerateRequest) map[string]interfac
 
 	return app.Ok(code)
 }
+
+func (app *Application) GetGenerateColumns(r *builder.GetGenerateColumnRequest) map[string]interface{} {
+	resp, err := app.b.GetGenerateColumns(r.Table)
+	if err != nil {
+		if errors.Is(err, builder.ErrNotFoundProvider) {
+			return app.Custom(400, err.Error(), nil)
+		}
+
+		return app.Error(err.Error())
+	}
+
+	return app.Ok(resp)
+}

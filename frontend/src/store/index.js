@@ -74,5 +74,14 @@ export const useStore = defineStore('main', {
 
       this.templates = resp.data
     },
+    async getGenerateColumns(table) {
+      let resp = await api.GetGenerateColumns({ table })
+      if (resp.code === 0) {
+        ui.error(resp.msg)
+        return []
+      }
+
+      return resp.data
+    },
   },
 })

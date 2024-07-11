@@ -22,6 +22,10 @@ export function GetConfig() {
   return window['go']['app']['Application']['GetConfig']();
 }
 
+export function GetGenerateColumns(arg1) {
+  return window['go']['app']['Application']['GetGenerateColumns'](arg1);
+}
+
 export function GetTables() {
   return window['go']['app']['Application']['GetTables']();
 }
